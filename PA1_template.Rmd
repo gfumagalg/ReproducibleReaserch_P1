@@ -1,0 +1,98 @@
+---
+title: "PA1_template"
+author: "Gerardo Fumagal"
+date: "11/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Project Assignment 1, Reproducible Research course
+
+This report is created for the porpoise of completing the project assignment for week 2
+of Reproducible Research course.
+
+The goal of the project is to analyze data captured from a personal activity monitoring device
+that collected information every 5 minutes on the number of steps taken by a participant. Data was
+collected for 2 months in October and November, 2012.
+
+## Getting data and transform
+
+Data for analysis is in the activity.csv file from downloaded from the project assignment description
+at the coursera web page. The information is submitted by date, interval and number of steps by each
+interval.
+
+All data is store in a dataframe object, steps and interval variables are integer, date is character
+variable. The variable date is transformed onto a date type.
+
+
+```{r}
+data_raw <- read.csv("activity.csv")
+data_raw$date <- as.Date(data_raw$date)
+```
+
+## Steps per day
+
+Firs part of the assignment is to calculate steps per day, mean and median. The following code does
+the calculations and plot a histogram of total steps per day. For this instance, all missing data
+will be ignored.
+
+```{r}
+steps_day <- with(data_raw, tapply(steps, date, sum, na.rm = TRUE))
+resp <- summary(steps_day)
+resp[["Mean"]]
+resp[["Median"]]
+```
+
+Histogram of steps per day:
+
+```{r histogram, fig.height=4}
+hist(steps_day, xlab = "Steps per day", main = "Histogram (steps per day)")
+```
+
+## Daily activity pattern
+
+Average daily activity, the following code calculates the average amount of steps taken
+per interval during the day, plots the results on a time series chart, and determines 
+the interval of the day on average with the maximum number of steps. 
+
+Calculates average number of steps per interval and stores it in a data frame:
+
+```{r}
+library('tibble')
+per_interval <- with(data_raw, tapply(steps, interval, mean, na.rm = TRUE))
+per_interval <- enframe(per_interval)
+names(per_interval) <- c("interval","average")
+```
+
+In order to make the time series plot, it is needed to convert the interval variable onto
+a POSIXct type. First, transform interval from character to integer, then change to a format
+of 4 digits with 0s to fill using sprintf() function this will convert it back to character, 
+then convert the result to a POSIXct type using strptime() and change the format to H:M. The
+result will give a character variable, last action is to transform interval to POSIXct with
+as.POSIXct() function.
+
+```{r}
+per_interval$interval <- as.integer(per_interval$interval)
+per_interval$interval <- sprintf("%04d", per_interval$interval)
+per_interval$interval <- with(per_interval, format(strptime(interval, format = "%H%M"), format = "%H:%M"))
+per_interval$interval <- as.POSIXct(per_interval$interval, format = "%H:%M")
+```
+
+Plot the average number of steps per interval during the day:
+
+```{r timeseries, fig.height =4}
+with(per_interval, plot(interval, average, type = "l", ylab = "Average number of steps", xlab = "Time of the day"))
+```
+
+Which interval on average has the maximun number of steps.
+
+Interval:
+
+```{r}
+max_interval <- per_interval$interval[which(max(per_interval$average) == per_interval$average)]
+as.character(max_interval, format = "%H:%M")
+```
+
