@@ -296,17 +296,6 @@ days_in_weekend <- c("Saturday", "Sunday")
 days_bin <- days_week %in% days_in_weekend
 f.days <- factor(days_bin, levels = c("TRUE","FALSE"), labels = c("weekend","weekday"))
 data_full$f.days <- f.days
-summary(data_full)
-```
-
-```
-##      steps             date               interval          f.days     
-##  Min.   :  0.00   Min.   :2012-10-01   Min.   :   0.0   weekend: 4608  
-##  1st Qu.:  0.00   1st Qu.:2012-10-16   1st Qu.: 588.8   weekday:12960  
-##  Median :  0.00   Median :2012-10-31   Median :1177.5                  
-##  Mean   : 37.57   Mean   :2012-10-31   Mean   :1177.5                  
-##  3rd Qu.: 19.04   3rd Qu.:2012-11-15   3rd Qu.:1766.2                  
-##  Max.   :806.00   Max.   :2012-11-30   Max.   :2355.0
 ```
 
 Plot average number of steps taken across all weekend and weekdays

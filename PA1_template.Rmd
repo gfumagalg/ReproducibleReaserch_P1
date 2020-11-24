@@ -222,7 +222,6 @@ days_in_weekend <- c("Saturday", "Sunday")
 days_bin <- days_week %in% days_in_weekend
 f.days <- factor(days_bin, levels = c("TRUE","FALSE"), labels = c("weekend","weekday"))
 data_full$f.days <- f.days
-summary(data_full)
 ```
 
 Plot average number of steps taken across all weekend and weekdays
