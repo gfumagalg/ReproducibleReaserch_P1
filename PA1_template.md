@@ -7,9 +7,7 @@ output:
     keep_md: yes
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 # Project Assignment 1, Reproducible Research course
 
@@ -33,7 +31,8 @@ All data is store in a dataframe object, steps and interval variables are intege
 variable. The variable date is transformed onto a date type.
 
 
-```{r}
+
+```r
 data_raw <- read.csv("activity.csv")
 data_raw$date <- as.Date(data_raw$date)
 ```
@@ -50,20 +49,35 @@ First part of the assignment is to calculate steps per day, mean and median. The
 the calculations and plot a histogram of total steps per day. For this instance, all missing data
 will be ignored.
 
-```{r}
+
+```r
 steps_day <- with(data_raw, tapply(steps, date, sum, na.rm = TRUE))
 resp <- summary(steps_day)
 m1 <- resp[["Mean"]]
 m1
+```
+
+```
+## [1] 9354.23
+```
+
+```r
 md1 <- resp[["Median"]]
 md1
 ```
 
+```
+## [1] 10395
+```
+
 Histogram of steps per day:
 
-```{r histogram, fig.height=4}
+
+```r
 hist(steps_day, xlab = "Steps per day", main = "Histogram (steps per day)")
 ```
+
+![](PA1_template_files/figure-html/histogram-1.png)<!-- -->
 
 ## What is the average daily activity pattern?
 
@@ -77,7 +91,8 @@ the interval of the day on average with the maximum number of steps.
 
 Calculates average number of steps per interval and stores it in a data frame:
 
-```{r}
+
+```r
 library('tibble')
 per_interval <- with(data_raw, tapply(steps, interval, mean, na.rm = TRUE))
 per_interval <- enframe(per_interval)
@@ -91,23 +106,31 @@ then convert the result to a POSIXct type using strptime() and change the format
 result will give a character variable, last action is to transform interval to POSIXct with
 as.POSIXct() function.
 
-```{r}
-per_interval$interval <- as.integer(per_interval$interval)
 
+```r
+per_interval$interval <- as.integer(per_interval$interval)
 ```
 
 Plot the average number of steps per interval during the day:
 
-```{r timeseries, fig.height =4}
+
+```r
 with(per_interval, plot(interval, average, type = "l", ylab = "Average number of steps", xlab = "Interval"))
 ```
+
+![](PA1_template_files/figure-html/timeseries-1.png)<!-- -->
 
 Which interval on average has the maximun number of steps.
 
 Interval:
 
-```{r}
+
+```r
 per_interval$interval[which(max(per_interval$average) == per_interval$average)]
+```
+
+```
+## [1] 835
 ```
 
 ## Imputing missing values
@@ -126,24 +149,39 @@ Start with defining how many missing values exist in the original database.
 
 Calculate the number of missing values (NAs) in the steps variable:
 
-```{r}
+
+```r
 missing_steps <- is.na(data_raw$steps)
 sum(missing_steps)
 ```
 
+```
+## [1] 2304
+```
+
 Now we determine which daters have these NAs are contained and the days of the week:
 
-```{r}
+
+```r
 list_missing <- which(is.na(data_raw$steps))
 dates_missing <- unique(data_raw$date[list_missing])
 dates_missing
+```
+
+```
+## [1] "2012-10-01" "2012-10-08" "2012-11-01" "2012-11-04" "2012-11-09"
+## [6] "2012-11-10" "2012-11-14" "2012-11-30"
+```
+
+```r
 days_missing <- weekdays(dates_missing)
 ```
 
 Missing data is on almost every day of the week except for Tuesday, note that daily patterns
 vary during the week, as it shown in the following chart comparing Monday and Sunday:
 
-```{r}
+
+```r
 y <- subset(data_raw, weekdays(date) == "Monday")
 Monday_per_interval <- enframe(with(y, tapply(steps, interval, mean, na.rm = TRUE)))
 names(Monday_per_interval) <- c("interval","average")
@@ -153,8 +191,15 @@ names(Sunday_per_interval) <- c("interval","average")
 Monday_per_interval$interval <- per_interval$interval
 Sunday_per_interval$interval <- per_interval$interval
 with(Monday_per_interval, plot(interval,average, type = "l", main = "Monday", ylim = c(0, 300)))
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+
+```r
 with(Sunday_per_interval, plot(interval,average, type = "l", main = "Sunday", ylim = c(0, 300)))
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-8-2.png)<!-- -->
 
 
 Strategy:
@@ -163,7 +208,8 @@ of the missing data.
 
 Create a new database by copying the original, then assign values to missing data:
 
-```{r}
+
+```r
 data_full <- data_raw
 for (i in (1:length(dates_missing))) {
         y <- subset(data_raw, weekdays(date) == weekdays(dates_missing[i]))
@@ -175,27 +221,54 @@ for (i in (1:length(dates_missing))) {
 We now view how the data looks now, the following code creates a histogram plot of the total
 steps per day:
 
-```{r, histogram2, fig.with=4}
+
+```r
 steps_day <- with(data_full, tapply(steps, date, sum, na.rm = TRUE))
 resp <- summary(steps_day)
 hist(steps_day, xlab = "Steps per day", main = "Histogram (steps per day)")
 ```
 
+![](PA1_template_files/figure-html/histogram2-1.png)<!-- -->
+
 Report mean and median of total number of steps per day:
 
-```{r}
+
+```r
 resp <- summary(steps_day)
 m2 <- resp[["Mean"]]
 m2
+```
+
+```
+## [1] 10821.21
+```
+
+```r
 md2 <- resp[["Median"]]
 md2
 ```
 
+```
+## [1] 11015
+```
+
 The impact of imputing data is shown as the difference of mean and median, as follows:
 
-```{r}
+
+```r
 sprintf("Mean difference: %2.1f%% ", 100*(m2-m1)/m1)
+```
+
+```
+## [1] "Mean difference: 15.7% "
+```
+
+```r
 sprintf("Median difference: %2.1f%% ", 100*(md2-md1)/md1)
+```
+
+```
+## [1] "Median difference: 6.0% "
 ```
 
 The impact of imputing missing values is an increase on the total number of steps per day,
@@ -216,7 +289,8 @@ Activity patterns between weekdays and weekends, to realize the difference, we n
 create an extra factor variable named f.days to indicate whether the date is weekday 
 or weekend.
 
-```{r}
+
+```r
 days_week <- weekdays(data_full$date)
 days_in_weekend <- c("Saturday", "Sunday")
 days_bin <- days_week %in% days_in_weekend
@@ -225,9 +299,20 @@ data_full$f.days <- f.days
 summary(data_full)
 ```
 
+```
+##      steps             date               interval          f.days     
+##  Min.   :  0.00   Min.   :2012-10-01   Min.   :   0.0   weekend: 4608  
+##  1st Qu.:  0.00   1st Qu.:2012-10-16   1st Qu.: 588.8   weekday:12960  
+##  Median :  0.00   Median :2012-10-31   Median :1177.5                  
+##  Mean   : 37.57   Mean   :2012-10-31   Mean   :1177.5                  
+##  3rd Qu.: 19.04   3rd Qu.:2012-11-15   3rd Qu.:1766.2                  
+##  Max.   :806.00   Max.   :2012-11-30   Max.   :2355.0
+```
+
 Plot average number of steps taken across all weekend and weekdays
 
-```{r}
+
+```r
 data_weekend <- subset(data_full, f.days == "weekend")
 plot_info1 <- enframe(with(data_weekend, tapply(steps, interval, mean)))
 names(plot_info1) <- c("interval","weekend")
@@ -241,7 +326,8 @@ library("gridExtra")
 p1 <- qplot(interval, weekend, data = plot_info1, geom = "line") + scale_x_continuous(breaks = seq(0,2355, 500))
 p2 <- qplot(interval, weekday, data = plot_info1, geom = "line")+ scale_x_continuous(breaks = seq(0,2355, 500))
 grid.arrange(p1,p2,nrow=2)
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
 
 
